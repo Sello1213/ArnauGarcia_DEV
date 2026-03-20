@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tu Nombre — Desarrollador Web Fullstack</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #0C0C0C;
+    --white: #F5F5F0;
+    --yellow: #E8FF47;
+    --yellow-dim: rgba(232,255,71,.08);
+    --gray: #1A1A1A;
+    --gray2: #252525;
+    --muted: rgba(245,245,240,.35);
+    --border: rgba(245,245,240,.08);
+    --syne: 'Syne', sans-serif;
+    --serif: 'Instrument Serif', serif;
+    --mono: 'JetBrains Mono', monospace;
+  }
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior: smooth; cursor: none; }
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: var(--syne);
+    overflow-x: hidden;
+  }
+
+  /* CUSTOM CURSOR */
+  .cursor {
+    position: fixed; width: 10px; height: 10px; background: var(--yellow);
+    border-radius: 50%; pointer-events: none; z-index: 9999;
+    transform: translate(-50%,-50%); transition: width .2s, height .2s, opacity .2s;
+    mix-blend-mode: difference;
+  }
+  .cursor-ring {
+    position: fixed; width: 36px; height: 36px; border: 1px solid var(--yellow);
+    border-radius: 50%; pointer-events: none; z-index: 9998;
+    transform: translate(-50%,-50%); transition: all .12s ease-out;
+    opacity: .4; mix-blend-mode: difference;
+  }
+  body:has(a:hover) .cursor { width: 16px; height: 16px; }
+  body:has(a:hover) .cursor-ring { width: 52px; height: 52px; opacity: .7; }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.5rem 3rem;
+    background: rgba(12,12,12,.9);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo { font-family: var(--mono); font-size: .75rem; color: var(--muted); letter-spacing: .08em; text-decoration: none; }
+  .nav-logo span { color: var(--yellow); }
+  .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+  .nav-links a { font-family: var(--mono); font-size: .7rem; color: var(--muted); text-decoration: none; letter-spacing: .06em; text-transform: uppercase; transition: color .2s; }
+  .nav-links a:hover { color: var(--white); }
+  .nav-cta {
+    font-family: var(--mono); font-size: .7rem; color: var(--black);
+    background: var(--yellow); padding: .6rem 1.4rem; text-decoration: none;
+    letter-spacing: .06em; text-transform: uppercase;
+    transition: opacity .2s;
+  }
+  .nav-cta:hover { opacity: .85; }
+
+  /* MARQUEE */
+  .marquee-bar {
+    background: var(--yellow); color: var(--black);
+    padding: .6rem 0; overflow: hidden; white-space: nowrap;
+    margin-top: 72px;
+  }
+  .marquee-track { display: inline-flex; animation: marquee 28s linear infinite; }
+  .marquee-track span { font-family: var(--mono); font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; padding: 0 2rem; font-weight: 500; }
+  @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+  /* HERO */
+  .hero {
+    min-height: calc(100vh - 72px - 32px);
+    display: grid; grid-template-columns: 1fr 1fr;
+    padding: 5rem 3rem 4rem;
+    border-bottom: 1px solid var(--border);
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse 60% 60% at 75% 50%, rgba(232,255,71,.04) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-grid-bg {
+    position: absolute; inset: 0; pointer-events: none;
+    background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black, transparent);
+  }
+  .hero-left { display: flex; flex-direction: column; justify-content: center; position: relative; z-index: 1; }
+  .hero-tag {
+    display: inline-flex; align-items: center; gap: .6rem;
+    font-family: var(--mono); font-size: .65rem; color: var(--yellow); letter-spacing: .1em; text-transform: uppercase;
+    margin-bottom: 2rem;
+  }
+  .hero-tag::before { content: ''; width: 8px; height: 8px; background: var(--yellow); border-radius: 50%; animation: pulse 2s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
+  .hero-name { font-family: var(--serif); font-size: clamp(3rem, 7vw, 6.5rem); line-height: 1.0; font-weight: 400; margin-bottom: 1rem; }
+  .hero-name em { font-style: italic; }
+  .hero-role { font-family: var(--mono); font-size: clamp(.8rem, 1.2vw, 1rem); color: var(--muted); letter-spacing: .06em; text-transform: uppercase; margin-bottom: 2.5rem; }
+  .hero-desc { font-size: 1rem; color: rgba(245,245,240,.6); line-height: 1.7; max-width: 45ch; margin-bottom: 3rem; }
+  .hero-buttons { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .btn-primary { background: var(--yellow); color: var(--black); padding: .9rem 2rem; font-family: var(--mono); font-size: .75rem; letter-spacing: .06em; text-transform: uppercase; text-decoration: none; transition: opacity .2s; }
+  .btn-primary:hover { opacity: .85; }
+  .btn-secondary { border: 1px solid var(--border); color: var(--white); padding: .9rem 2rem; font-family: var(--mono); font-size: .75rem; letter-spacing: .06em; text-transform: uppercase; text-decoration: none; transition: border-color .2s; }
+  .btn-secondary:hover { border-color: rgba(245,245,240,.3); }
+  .hero-right { display: flex; align-items: center; justify-content: center; position: relative; z-index: 1; }
+  .hero-visual-container { position: relative; }
+  .hero-ring {
+    width: 340px; height: 340px; border-radius: 50%;
+    border: 1px dashed rgba(232,255,71,.2);
+    display: flex; align-items: center; justify-content: center;
+    animation: spin-slow 25s linear infinite;
+  }
+  @keyframes spin-slow { to { transform: rotate(360deg); } }
+  .hero-ring-inner { animation: spin-slow-rev 25s linear infinite; text-align: center; }
+  @keyframes spin-slow-rev { to { transform: rotate(-360deg); } }
+  .hero-avatar {
+    width: 200px; height: 200px; border-radius: 50%;
+    background: var(--gray2); border: 2px solid var(--yellow);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--serif); font-size: 4rem; font-style: italic;
+  }
+  .ring-dots {
+    position: absolute; inset: 0; border-radius: 50%;
+  }
+  .ring-dot {
+    position: absolute; width: 8px; height: 8px; background: var(--yellow); border-radius: 50%;
+    top: 50%; left: 50%; transform-origin: 0 0;
+  }
+  .hero-stats { position: absolute; right: -2rem; bottom: 2rem; display: flex; flex-direction: column; gap: .8rem; }
+  .hero-stat { background: var(--gray); border: 1px solid var(--border); padding: .8rem 1.2rem; }
+  .hero-stat-num { font-family: var(--syne); font-size: 1.4rem; font-weight: 700; color: var(--yellow); }
+  .hero-stat-lbl { font-family: var(--mono); font-size: .6rem; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+
+  /* SECTIONS COMMON */
+  section { padding: 6rem 3rem; border-bottom: 1px solid var(--border); }
+  .sec-eyebrow { font-family: var(--mono); font-size: .65rem; letter-spacing: .15em; text-transform: uppercase; color: var(--yellow); margin-bottom: 1.5rem; }
+  .sec-title { font-family: var(--serif); font-size: clamp(2.2rem, 4vw, 3.8rem); line-height: 1.1; font-weight: 400; margin-bottom: 1.5rem; }
+  .sec-title em { font-style: italic; }
+  .sec-lead { font-size: 1rem; color: rgba(245,245,240,.55); line-height: 1.7; max-width: 55ch; }
+
+  /* SERVICIOS */
+  .servicios-section { background: var(--gray); }
+  .servicios-header { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: end; margin-bottom: 4rem; }
+  .servicios-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); }
+  .servicio-card {
+    background: var(--black); padding: 2.5rem;
+    transition: background .3s; cursor: default;
+    position: relative; overflow: hidden;
+  }
+  .servicio-card::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+    background: var(--yellow); transform: scaleX(0); transform-origin: left;
+    transition: transform .3s;
+  }
+  .servicio-card:hover { background: var(--gray2); }
+  .servicio-card:hover::after { transform: scaleX(1); }
+  .servicio-num { font-family: var(--mono); font-size: .6rem; color: var(--yellow); letter-spacing: .1em; margin-bottom: 1.5rem; }
+  .servicio-icon { font-size: 2rem; margin-bottom: 1.2rem; }
+  .servicio-title { font-size: 1.2rem; font-weight: 600; margin-bottom: .8rem; }
+  .servicio-desc { font-size: .9rem; color: var(--muted); line-height: 1.6; margin-bottom: 1.5rem; }
+  .servicio-price { font-family: var(--mono); font-size: .7rem; color: var(--yellow); letter-spacing: .06em; }
+
+  /* SOBRE MÍ */
+  .about-section { display: grid; grid-template-columns: 1fr 1.2fr; gap: 5rem; align-items: start; }
+  .about-left {}
+  .about-image {
+    width: 100%; aspect-ratio: 3/4; background: var(--gray2);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--serif); font-size: 6rem; font-style: italic; color: var(--yellow);
+    border: 1px solid var(--border); position: relative; overflow: hidden;
+  }
+  .about-image::before {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 40%;
+    background: linear-gradient(transparent, rgba(12,12,12,.8));
+  }
+  .about-image-caption { position: absolute; bottom: 1.5rem; left: 1.5rem; font-family: var(--mono); font-size: .65rem; color: var(--muted); }
+  .about-right { padding-top: 2rem; }
+  .about-body { font-size: 1rem; color: rgba(245,245,240,.65); line-height: 1.8; margin-bottom: 2.5rem; }
+  .about-body p { margin-bottom: 1.2rem; }
+  .skills-section-inner { margin-top: 3rem; }
+  .skills-label { font-family: var(--mono); font-size: .65rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-bottom: 1.5rem; }
+  .skills-cloud { display: flex; flex-wrap: wrap; gap: .6rem; }
+  .skill-pill {
+    font-family: var(--mono); font-size: .7rem; padding: .4rem 1rem;
+    border: 1px solid var(--border); color: var(--muted);
+    transition: all .2s;
+  }
+  .skill-pill:hover { border-color: var(--yellow); color: var(--yellow); }
+  .skill-pill.highlight { border-color: rgba(232,255,71,.3); color: var(--yellow); background: var(--yellow-dim); }
+
+  /* PROCESO */
+  .proceso-section { background: var(--gray); }
+  .proceso-steps { margin-top: 4rem; display: grid; grid-template-columns: repeat(4,1fr); gap: 2px; background: var(--border); }
+  .proceso-step { background: var(--gray); padding: 2rem; position: relative; }
+  .step-num { font-family: var(--mono); font-size: 3rem; color: rgba(232,255,71,.1); font-weight: 400; line-height: 1; margin-bottom: 1.5rem; }
+  .step-title { font-size: 1.05rem; font-weight: 600; margin-bottom: .8rem; }
+  .step-desc { font-size: .85rem; color: var(--muted); line-height: 1.6; }
+  .step-arrow { position: absolute; top: 2rem; right: 1.5rem; font-size: 1.2rem; color: rgba(232,255,71,.3); }
+  .proceso-step:last-child .step-arrow { display: none; }
+
+  /* PRECIOS */
+  .precios-header { text-align: center; max-width: 50ch; margin: 0 auto 4rem; }
+  .precios-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: var(--border); }
+  .precio-card { background: var(--black); padding: 2.5rem; position: relative; }
+  .precio-card.featured { background: var(--gray2); border: 1px solid var(--yellow); }
+  .precio-badge { position: absolute; top: 1.5rem; right: 1.5rem; background: var(--yellow); color: var(--black); font-family: var(--mono); font-size: .6rem; padding: .2rem .7rem; letter-spacing: .06em; text-transform: uppercase; }
+  .precio-name { font-family: var(--mono); font-size: .65rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 1rem; }
+  .precio-price { font-family: var(--serif); font-size: 3.5rem; font-style: italic; margin-bottom: .5rem; }
+  .precio-unit { font-family: var(--mono); font-size: .7rem; color: var(--muted); margin-bottom: 2rem; }
+  .precio-features { list-style: none; margin-bottom: 2.5rem; }
+  .precio-features li { font-size: .9rem; color: rgba(245,245,240,.65); padding: .6rem 0; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: .7rem; }
+  .precio-features li::before { content: '✓'; color: var(--yellow); font-family: var(--mono); font-size: .8rem; flex-shrink: 0; }
+  .precio-features li.no::before { content: '—'; color: var(--muted); }
+  .precio-features li.no { color: var(--muted); }
+  .precio-btn { display: block; text-align: center; padding: .9rem; font-family: var(--mono); font-size: .75rem; letter-spacing: .06em; text-transform: uppercase; text-decoration: none; transition: all .2s; }
+  .precio-btn-outline { border: 1px solid var(--border); color: var(--white); }
+  .precio-btn-outline:hover { border-color: rgba(245,245,240,.3); }
+  .precio-btn-filled { background: var(--yellow); color: var(--black); }
+  .precio-btn-filled:hover { opacity: .9; }
+
+  /* PORTFOLIO PREVIEW */
+  .portfolio-section { background: var(--gray); }
+  .portfolio-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: var(--border); margin-top: 3rem; }
+  .portfolio-item { background: var(--black); aspect-ratio: 4/3; position: relative; overflow: hidden; cursor: pointer; }
+  .portfolio-item:first-child { grid-column: span 2; }
+  .portfolio-bg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 5rem; background: var(--gray2); transition: transform .4s; }
+  .portfolio-item:hover .portfolio-bg { transform: scale(1.05); }
+  .portfolio-overlay { position: absolute; inset: 0; background: rgba(12,12,12,.6); opacity: 0; transition: opacity .3s; display: flex; align-items: flex-end; padding: 2rem; }
+  .portfolio-item:hover .portfolio-overlay { opacity: 1; }
+  .portfolio-info {}
+  .portfolio-tag { font-family: var(--mono); font-size: .6rem; letter-spacing: .08em; text-transform: uppercase; color: var(--yellow); margin-bottom: .5rem; }
+  .portfolio-title { font-size: 1.1rem; font-weight: 600; }
+  .portfolio-more { display: flex; align-items: center; justify-content: space-between; margin-top: 2rem; }
+  .portfolio-count { font-family: var(--mono); font-size: .75rem; color: var(--muted); }
+  .portfolio-link { font-family: var(--mono); font-size: .75rem; color: var(--yellow); text-decoration: none; border-bottom: 1px solid rgba(232,255,71,.3); padding-bottom: 2px; }
+
+  /* FAQ */
+  .faq-section { display: grid; grid-template-columns: 1fr 1.5fr; gap: 5rem; }
+  .faq-list { display: flex; flex-direction: column; }
+  .faq-item { border-top: 1px solid var(--border); }
+  .faq-q { width: 100%; background: none; border: none; color: var(--white); font-family: var(--syne); font-size: 1rem; font-weight: 500; padding: 1.5rem 0; text-align: left; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+  .faq-q:hover { color: var(--yellow); }
+  .faq-icon { color: var(--yellow); font-size: 1.2rem; transition: transform .3s; flex-shrink: 0; }
+  .faq-a { max-height: 0; overflow: hidden; transition: max-height .4s ease; }
+  .faq-a p { font-size: .9rem; color: var(--muted); line-height: 1.7; padding-bottom: 1.5rem; }
+  .faq-item.open .faq-icon { transform: rotate(45deg); }
+  .faq-item.open .faq-a { max-height: 200px; }
+
+  /* CONTACTO */
+  .contact-section { background: var(--yellow); color: var(--black); text-align: center; padding: 6rem 3rem; }
+  .contact-section .sec-title { color: var(--black); font-size: clamp(2.5rem,5vw,5rem); margin-bottom: 1.5rem; }
+  .contact-section .sec-lead { color: rgba(0,0,0,.6); margin: 0 auto 3rem; }
+  .contact-email { font-family: var(--serif); font-size: clamp(1.5rem,3vw,2.5rem); font-style: italic; color: var(--black); text-decoration: none; border-bottom: 2px solid rgba(0,0,0,.2); transition: border-color .2s; }
+  .contact-email:hover { border-color: var(--black); }
+  .contact-buttons { display: flex; gap: 1rem; justify-content: center; margin-top: 3rem; flex-wrap: wrap; }
+  .contact-btn { padding: .9rem 2rem; font-family: var(--mono); font-size: .75rem; letter-spacing: .06em; text-transform: uppercase; text-decoration: none; transition: all .2s; }
+  .contact-btn-black { background: var(--black); color: var(--yellow); }
+  .contact-btn-black:hover { opacity: .85; }
+  .contact-btn-outline { border: 2px solid rgba(0,0,0,.3); color: var(--black); }
+  .contact-btn-outline:hover { border-color: var(--black); }
+  .contact-socials { display: flex; gap: 2rem; justify-content: center; margin-top: 3rem; }
+  .social-link { font-family: var(--mono); font-size: .7rem; letter-spacing: .06em; text-transform: uppercase; color: rgba(0,0,0,.5); text-decoration: none; }
+  .social-link:hover { color: var(--black); }
+
+  /* FOOTER */
+  footer { padding: 2.5rem 3rem; display: flex; align-items: center; justify-content: space-between; }
+  .footer-left { font-family: var(--mono); font-size: .65rem; color: var(--muted); }
+  .footer-right { font-family: var(--mono); font-size: .65rem; color: var(--muted); }
+
+  /* REVEAL */
+  .reveal { opacity: 0; transform: translateY(20px); transition: opacity .6s, transform .6s; }
+  .reveal.visible { opacity: 1; transform: none; }
+
+  @media (max-width: 900px) {
+    html { cursor: auto; }
+    .cursor, .cursor-ring { display: none; }
+    nav { padding: 1rem 1.5rem; }
+    .nav-links { display: none; }
+    section { padding: 4rem 1.5rem; }
+    .hero { grid-template-columns: 1fr; padding: 4rem 1.5rem 3rem; min-height: auto; }
+    .hero-right { display: none; }
+    .servicios-grid, .proceso-steps, .precios-grid, .portfolio-grid { grid-template-columns: 1fr; }
+    .portfolio-item:first-child { grid-column: span 1; }
+    .about-section, .faq-section { grid-template-columns: 1fr; }
+    .servicios-header { grid-template-columns: 1fr; gap: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">Tu<span>Nombre</span>.dev</a>
+  <ul class="nav-links">
+    <li><a href="#servicios">Servicios</a></li>
+    <li><a href="#sobre-mi">Sobre mí</a></li>
+    <li><a href="#proceso">Proceso</a></li>
+    <li><a href="#precios">Precios</a></li>
+    <li><a href="#portfolio">Portfolio</a></li>
+    <li><a href="#contacto">Contacto</a></li>
+  </ul>
+  <a href="#contacto" class="nav-cta">Trabajemos juntos</a>
+</nav>
+
+<!-- MARQUEE -->
+<div class="marquee-bar">
+  <div class="marquee-track">
+    <span>JavaScript</span><span>·</span><span>React</span><span>·</span><span>Next.js</span><span>·</span>
+    <span>Node.js</span><span>·</span><span>PostgreSQL</span><span>·</span><span>Tailwind CSS</span><span>·</span>
+    <span>TypeScript</span><span>·</span><span>Docker</span><span>·</span><span>AWS</span><span>·</span>
+    <span>Figma</span><span>·</span><span>REST APIs</span><span>·</span><span>Git</span><span>·</span>
+    <span>JavaScript</span><span>·</span><span>React</span><span>·</span><span>Next.js</span><span>·</span>
+    <span>Node.js</span><span>·</span><span>PostgreSQL</span><span>·</span><span>Tailwind CSS</span><span>·</span>
+    <span>TypeScript</span><span>·</span><span>Docker</span><span>·</span><span>AWS</span><span>·</span>
+    <span>Figma</span><span>·</span><span>REST APIs</span><span>·</span><span>Git</span><span>·</span>
+  </div>
+</div>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="hero-grid-bg"></div>
+  <div class="hero-left">
+    <div class="hero-tag">Disponible para proyectos</div>
+    <h1 class="hero-name">Tu<br><em>Nombre</em></h1>
+    <p class="hero-role">Desarrollador Web Fullstack · Barcelona</p>
+    <p class="hero-desc">Diseño y desarrollo aplicaciones web a medida que convierten problemas reales en productos digitales que funcionan. Código limpio, diseño cuidado, entregas puntuales.</p>
+    <div class="hero-buttons">
+      <a href="#servicios" class="btn-primary">Ver servicios</a>
+      <a href="#portfolio" class="btn-secondary">Portfolio →</a>
+    </div>
+  </div>
+  <div class="hero-right">
+    <div class="hero-visual-container">
+      <div class="hero-ring">
+        <div class="hero-ring-inner">
+          <div class="hero-avatar">TN</div>
+        </div>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <div class="hero-stat-num">+30</div>
+          <div class="hero-stat-lbl">Proyectos</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-num">4+</div>
+          <div class="hero-stat-lbl">Años exp.</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-num">100%</div>
+          <div class="hero-stat-lbl">Satisfacción</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICIOS -->
+<section id="servicios" class="servicios-section">
+  <div class="servicios-header reveal">
+    <div>
+      <div class="sec-eyebrow">Servicios</div>
+      <h2 class="sec-title">Lo que puedo hacer <em>por ti</em></h2>
+    </div>
+    <p class="sec-lead">Me especializo en el ciclo completo: desde el diseño de interfaz hasta el despliegue en producción. Sin depender de intermediarios.</p>
+  </div>
+  <div class="servicios-grid reveal">
+    <div class="servicio-card">
+      <div class="servicio-num">01</div>
+      <div class="servicio-icon">🖥</div>
+      <div class="servicio-title">Diseño Web</div>
+      <p class="servicio-desc">Interfaces modernas, responsivas y con una identidad visual coherente. Diseño en Figma antes de escribir una sola línea de código.</p>
+      <div class="servicio-price">Desde 800€</div>
+    </div>
+    <div class="servicio-card">
+      <div class="servicio-num">02</div>
+      <div class="servicio-icon">🚀</div>
+      <div class="servicio-title">Landing Pages</div>
+      <p class="servicio-desc">Páginas de captación optimizadas para conversión. Velocidad máxima, SEO técnico y copywriting persuasivo incluido.</p>
+      <div class="servicio-price">Desde 500€</div>
+    </div>
+    <div class="servicio-card">
+      <div class="servicio-num">03</div>
+      <div class="servicio-icon">⚙️</div>
+      <div class="servicio-title">Apps a Medida</div>
+      <p class="servicio-desc">Aplicaciones web completas con backend, base de datos y autenticación. Soluciones escalables construidas para durar.</p>
+      <div class="servicio-price">Desde 2.500€</div>
+    </div>
+    <div class="servicio-card">
+      <div class="servicio-num">04</div>
+      <div class="servicio-icon">🛒</div>
+      <div class="servicio-title">Ecommerce</div>
+      <p class="servicio-desc">Tiendas online con pasarela de pago, gestión de inventario y panel de administración. Integración con Stripe, PayPal y más.</p>
+      <div class="servicio-price">Desde 1.800€</div>
+    </div>
+    <div class="servicio-card">
+      <div class="servicio-num">05</div>
+      <div class="servicio-icon">🤖</div>
+      <div class="servicio-title">Automatización</div>
+      <p class="servicio-desc">Scripts y sistemas que automatizan tareas repetitivas. Integraciones entre plataformas, bots, scrapers y pipelines de datos.</p>
+      <div class="servicio-price">Desde 400€</div>
+    </div>
+    <div class="servicio-card">
+      <div class="servicio-num">06</div>
+      <div class="servicio-icon">🔧</div>
+      <div class="servicio-title">Mantenimiento</div>
+      <p class="servicio-desc">Soporte mensual para tu web o app. Actualizaciones, corrección de errores, mejoras de rendimiento y copias de seguridad.</p>
+      <div class="servicio-price">Desde 150€/mes</div>
+    </div>
+  </div>
+</section>
+
+<!-- SOBRE MÍ -->
+<section id="sobre-mi">
+  <div class="about-section reveal">
+    <div class="about-left">
+      <div class="about-image">
+        TN
+        <div class="about-image-caption">Tu Nombre — Desarrollador Fullstack</div>
+      </div>
+    </div>
+    <div class="about-right">
+      <div class="sec-eyebrow">Sobre mí</div>
+      <h2 class="sec-title">No soy solo código. <em>Entiendo tu negocio.</em></h2>
+      <div class="about-body">
+        <p>Llevo más de 4 años construyendo productos digitales para empresas y autónomos. Empecé como freelance mientras estudiaba, y desde entonces no he parado. He trabajado con startups en fase seed, pymes consolidadas y marcas personales en crecimiento.</p>
+        <p>Lo que me diferencia no es el stack que uso, sino cómo escucho. Antes de escribir código, necesito entender cuál es el problema real. A veces la solución que el cliente pide no es la más adecuada. Mi trabajo es ayudarte a tomar la mejor decisión técnica.</p>
+        <p>Trabajo de forma asíncrona, comunico bien y entrego en los plazos acordados. Sin sorpresas, sin excusas.</p>
+      </div>
+      <div class="skills-section-inner">
+        <div class="skills-label">Tecnologías que domino</div>
+        <div class="skills-cloud">
+          <span class="skill-pill highlight">JavaScript</span>
+          <span class="skill-pill highlight">React</span>
+          <span class="skill-pill highlight">Node.js</span>
+          <span class="skill-pill">Next.js</span>
+          <span class="skill-pill">TypeScript</span>
+          <span class="skill-pill highlight">PostgreSQL</span>
+          <span class="skill-pill">MongoDB</span>
+          <span class="skill-pill">Redis</span>
+          <span class="skill-pill">Docker</span>
+          <span class="skill-pill">AWS</span>
+          <span class="skill-pill">Figma</span>
+          <span class="skill-pill">Tailwind</span>
+          <span class="skill-pill">REST APIs</span>
+          <span class="skill-pill">Git</span>
+          <span class="skill-pill">Linux</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESO -->
+<section id="proceso" class="proceso-section">
+  <div class="reveal" style="text-align:center;max-width:50ch;margin:0 auto;">
+    <div class="sec-eyebrow">Cómo trabajo</div>
+    <h2 class="sec-title">Un proceso <em>transparente</em></h2>
+    <p class="sec-lead">Sin sorpresas ni reuniones innecesarias. Así es cómo llevamos tu proyecto de la idea a producción.</p>
+  </div>
+  <div class="proceso-steps reveal">
+    <div class="proceso-step">
+      <div class="step-num">01</div>
+      <div class="step-arrow">→</div>
+      <div class="step-title">Descubrimiento</div>
+      <p class="step-desc">Una llamada de 45 minutos para entender tu negocio, tus objetivos y lo que necesitas realmente. Sin coste y sin compromiso.</p>
+    </div>
+    <div class="proceso-step">
+      <div class="step-num">02</div>
+      <div class="step-arrow">→</div>
+      <div class="step-title">Propuesta</div>
+      <p class="step-desc">Presupuesto detallado, plazos realistas y alcance claro. Si no es viable, te lo digo antes de empezar. Todo por escrito.</p>
+    </div>
+    <div class="proceso-step">
+      <div class="step-num">03</div>
+      <div class="step-arrow">→</div>
+      <div class="step-title">Desarrollo</div>
+      <p class="step-desc">Trabajo en sprints con entregas parciales cada semana. Acceso al repositorio y demos frecuentes para que siempre sepas cómo avanza.</p>
+    </div>
+    <div class="proceso-step">
+      <div class="step-num">04</div>
+      <div class="step-title">Entrega</div>
+      <p class="step-desc">Despliegue, documentación y formación básica incluidos. Período de garantía de 30 días. Soporte disponible si lo necesitas.</p>
+    </div>
+  </div>
+</section>
+
+<!-- PRECIOS -->
+<section id="precios">
+  <div class="precios-header reveal">
+    <div class="sec-eyebrow">Planes y precios</div>
+    <h2 class="sec-title">Transparencia <em>total</em></h2>
+    <p class="sec-lead">Precios orientativos. Cada proyecto es único y recibirás un presupuesto personalizado tras la primera llamada.</p>
+  </div>
+  <div class="precios-grid reveal">
+    <div class="precio-card">
+      <div class="precio-name">Básico</div>
+      <div class="precio-price">500€</div>
+      <div class="precio-unit">Proyecto único</div>
+      <ul class="precio-features">
+        <li>Landing page o web corporativa</li>
+        <li>Diseño responsive</li>
+        <li>SEO técnico básico</li>
+        <li>Formulario de contacto</li>
+        <li class="no">Panel de administración</li>
+        <li class="no">Base de datos</li>
+        <li class="no">Integraciones API</li>
+      </ul>
+      <a href="#contacto" class="precio-btn precio-btn-outline">Contactar</a>
+    </div>
+    <div class="precio-card featured">
+      <div class="precio-badge">Más elegido</div>
+      <div class="precio-name">Pro</div>
+      <div class="precio-price">2.500€</div>
+      <div class="precio-unit">Proyecto completo</div>
+      <ul class="precio-features">
+        <li>Web o app a medida</li>
+        <li>Diseño UI/UX en Figma</li>
+        <li>Backend + Base de datos</li>
+        <li>Autenticación de usuarios</li>
+        <li>Panel de administración</li>
+        <li>Despliegue incluido</li>
+        <li class="no">Integraciones avanzadas</li>
+      </ul>
+      <a href="#contacto" class="precio-btn precio-btn-filled">Empezar →</a>
+    </div>
+    <div class="precio-card">
+      <div class="precio-name">Empresa</div>
+      <div class="precio-price">A medida</div>
+      <div class="precio-unit">Presupuesto personalizado</div>
+      <ul class="precio-features">
+        <li>Proyectos complejos y largos</li>
+        <li>Arquitectura escalable</li>
+        <li>Integraciones API avanzadas</li>
+        <li>Formación al equipo</li>
+        <li>SLA garantizado</li>
+        <li>Soporte dedicado</li>
+        <li>Documentación técnica completa</li>
+      </ul>
+      <a href="#contacto" class="precio-btn precio-btn-outline">Hablemos</a>
+    </div>
+  </div>
+</section>
+
+<!-- PORTFOLIO PREVIEW -->
+<section id="portfolio" class="portfolio-section">
+  <div class="reveal" style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:1rem;">
+    <div>
+      <div class="sec-eyebrow">Portfolio</div>
+      <h2 class="sec-title">Proyectos <em>recientes</em></h2>
+    </div>
+    <a href="proyectos-practica.html" class="portfolio-link">Ver todos los proyectos →</a>
+  </div>
+  <div class="portfolio-grid reveal">
+    <div class="portfolio-item">
+      <div class="portfolio-bg">🏥</div>
+      <div class="portfolio-overlay">
+        <div class="portfolio-info">
+          <div class="portfolio-tag">Healthcare · Fullstack</div>
+          <div class="portfolio-title">Sistema de Gestión Hospitalaria</div>
+        </div>
+      </div>
+    </div>
+    <div class="portfolio-item">
+      <div class="portfolio-bg">🛒</div>
+      <div class="portfolio-overlay">
+        <div class="portfolio-info">
+          <div class="portfolio-tag">Ecommerce · React</div>
+          <div class="portfolio-title">Tienda Online Retail</div>
+        </div>
+      </div>
+    </div>
+    <div class="portfolio-item">
+      <div class="portfolio-bg">🎬</div>
+      <div class="portfolio-overlay">
+        <div class="portfolio-info">
+          <div class="portfolio-tag">App · API Integration</div>
+          <div class="portfolio-title">Buscador de Películas</div>
+        </div>
+      </div>
+    </div>
+    <div class="portfolio-item">
+      <div class="portfolio-bg">📊</div>
+      <div class="portfolio-overlay">
+        <div class="portfolio-info">
+          <div class="portfolio-tag">Dashboard · Data Viz</div>
+          <div class="portfolio-title">Panel de Analítica</div>
+        </div>
+      </div>
+    </div>
+    <div class="portfolio-item">
+      <div class="portfolio-bg">⚡</div>
+      <div class="portfolio-overlay">
+        <div class="portfolio-info">
+          <div class="portfolio-tag">Landing · Conversión</div>
+          <div class="portfolio-title">Landing Page Optimizada</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="portfolio-more reveal">
+    <span class="portfolio-count">Mostrando 5 de 30+ proyectos</span>
+    <a href="proyectos-practica.html" class="portfolio-link">Ver todos →</a>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section>
+  <div class="faq-section reveal">
+    <div>
+      <div class="sec-eyebrow">FAQ</div>
+      <h2 class="sec-title">Preguntas <em>frecuentes</em></h2>
+      <p class="sec-lead">Lo que los clientes siempre acaban preguntando antes de contratar.</p>
+    </div>
+    <div class="faq-list">
+      <div class="faq-item open">
+        <button class="faq-q">¿Cuánto tarda un proyecto? <span class="faq-icon">+</span></button>
+        <div class="faq-a"><p>Depende de la complejidad. Una landing page suele estar lista en 1-2 semanas. Una web completa con backend tarda entre 4 y 8 semanas. Una app a medida puede llevar de 2 a 5 meses. Siempre te doy un plazo realista en la propuesta.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">¿Cómo se estructuran los pagos? <span class="faq-icon">+</span></button>
+        <div class="faq-a"><p>Proyectos pequeños: 50% al inicio, 50% al entregar. Proyectos grandes: 30% al inicio, 40% a mitad del desarrollo, 30% en la entrega final. Nunca más del 50% por adelantado.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">¿Qué pasa después de la entrega? <span class="faq-icon">+</span></button>
+        <div class="faq-a"><p>Incluye 30 días de garantía para corregir cualquier error. Después ofrezco planes de mantenimiento mensual opcionales. También puedo darte acceso completo al código si prefieres gestionarlo tú mismo.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">¿Trabajas con clientes fuera de España? <span class="faq-icon">+</span></button>
+        <div class="faq-a"><p>Sí, sin problema. Trabajo de forma totalmente remota y en horario flexible para adaptarme a diferentes zonas horarias. Acepto pagos en EUR, USD y GBP.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">¿Puedo ver el progreso del proyecto? <span class="faq-icon">+</span></button>
+        <div class="faq-a"><p>Por supuesto. Tendrás acceso al repositorio en GitHub desde el primer día y habrá demos semanales. Uso Notion para gestionar las tareas y cualquier herramienta que prefieras.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACTO -->
+<section id="contacto" class="contact-section">
+  <div class="reveal">
+    <div class="sec-eyebrow" style="color:rgba(0,0,0,.5);">¿Empezamos?</div>
+    <h2 class="sec-title">Cuéntame tu <em>proyecto</em></h2>
+    <p class="sec-lead" style="color:rgba(0,0,0,.6);margin:0 auto 2.5rem;">Respondo en menos de 24 horas. Primera consulta gratuita, sin compromiso.</p>
+    <a href="mailto:hola@tunombre.dev" class="contact-email">hola@tunombre.dev</a>
+    <div class="contact-buttons">
+      <a href="mailto:hola@tunombre.dev" class="contact-btn contact-btn-black">Enviar email</a>
+      <a href="#" class="contact-btn contact-btn-outline">Reservar llamada</a>
+    </div>
+    <div class="contact-socials">
+      <a href="#" class="social-link">LinkedIn</a>
+      <a href="#" class="social-link">GitHub</a>
+      <a href="#" class="social-link">Twitter/X</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <span class="footer-left">© 2024 Tu Nombre · Diseño y desarrollo web</span>
+  <span class="footer-right">Hecho con ☕ en Barcelona</span>
+</footer>
+
+<script>
+  // Cursor
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursorRing');
+  let mx = 0, my = 0, rx = 0, ry = 0;
+  document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; cursor.style.left = mx + 'px'; cursor.style.top = my + 'px'; });
+  function animateRing() {
+    rx += (mx - rx) * .12;
+    ry += (my - ry) * .12;
+    ring.style.left = rx + 'px';
+    ring.style.top = ry + 'px';
+    requestAnimationFrame(animateRing);
+  }
+  animateRing();
+
+  // FAQ accordion
+  document.querySelectorAll('.faq-q').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.faq-item');
+      const wasOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+      if (!wasOpen) item.classList.add('open');
+    });
+  });
+
+  // Reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach((e, i) => { if (e.isIntersecting) setTimeout(() => e.target.classList.add('visible'), i * 60); });
+  }, { threshold: 0.08 });
+  reveals.forEach(r => obs.observe(r));
+</script>
+</body>
+</html>

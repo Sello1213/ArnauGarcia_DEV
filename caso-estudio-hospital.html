@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hospital Sant Pau — Caso de Estudio</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #F4F1EC;
+    --ink: #1A1814;
+    --ink-light: #6B6560;
+    --accent: #C8401A;
+    --accent-soft: #F0E8E3;
+    --border: rgba(26,24,20,0.12);
+    --mono: 'DM Mono', monospace;
+    --serif: 'DM Serif Display', serif;
+    --sans: 'DM Sans', sans-serif;
+  }
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--cream);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.2rem 3rem;
+    background: rgba(244,241,236,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo { font-family: var(--mono); font-size: .75rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-light); text-decoration: none; }
+  .nav-links { display: flex; gap: 2rem; list-style: none; }
+  .nav-links a { font-family: var(--mono); font-size: .7rem; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-light); text-decoration: none; transition: color .2s; }
+  .nav-links a:hover { color: var(--ink); }
+  .nav-cta { font-family: var(--mono); font-size: .7rem; letter-spacing: .08em; text-transform: uppercase; background: var(--ink); color: var(--cream); padding: .5rem 1.2rem; text-decoration: none; transition: background .2s; }
+  .nav-cta:hover { background: var(--accent); }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: grid;
+    grid-template-rows: 1fr auto;
+    padding: 8rem 3rem 4rem;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  .hero-eyebrow {
+    font-family: var(--mono); font-size: .7rem; letter-spacing: .15em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 2rem;
+    display: flex; align-items: center; gap: .8rem;
+  }
+  .hero-eyebrow::before { content: ''; display: inline-block; width: 2rem; height: 1px; background: var(--accent); }
+  .hero-title {
+    font-family: var(--serif); font-size: clamp(3.5rem, 8vw, 8rem);
+    line-height: 1.0; font-weight: 400; max-width: 18ch;
+    margin-bottom: 3rem;
+  }
+  .hero-title em { font-style: italic; color: var(--accent); }
+  .hero-meta {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 2rem; border-top: 1px solid var(--border); padding-top: 2rem;
+  }
+  .meta-item label { font-family: var(--mono); font-size: .65rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-light); display: block; margin-bottom: .4rem; }
+  .meta-item span { font-family: var(--mono); font-size: .85rem; color: var(--ink); }
+  .hero-visual {
+    position: absolute; right: 3rem; top: 50%; transform: translateY(-50%);
+    width: 42%; max-width: 600px;
+  }
+  .hero-badge {
+    position: absolute; top: 9rem; right: 3rem;
+    width: 110px; height: 110px;
+    background: var(--ink); color: var(--cream);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    flex-direction: column; text-align: center;
+    font-family: var(--mono); font-size: .6rem; letter-spacing: .06em; text-transform: uppercase;
+    animation: spin 20s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .hero-badge-inner { animation: spin-reverse 20s linear infinite; }
+  @keyframes spin-reverse { to { transform: rotate(-360deg); } }
+
+  /* UI MOCKUP */
+  .mockup-window {
+    background: #1E1E2A; border-radius: 12px; overflow: hidden;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,.06);
+  }
+  .mockup-topbar {
+    display: flex; align-items: center; gap: .5rem; padding: .8rem 1rem;
+    background: #16161F; border-bottom: 1px solid rgba(255,255,255,.05);
+  }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot-r { background: #FF5F57; }
+  .dot-y { background: #FFBD2E; }
+  .dot-g { background: #28C840; }
+  .mockup-topbar-title { font-family: var(--mono); font-size: .65rem; color: rgba(255,255,255,.3); margin-left: auto; margin-right: auto; }
+  .mockup-body { padding: 1.2rem; display: grid; grid-template-columns: 180px 1fr; gap: 1rem; min-height: 320px; }
+  .mockup-sidebar { background: rgba(255,255,255,.03); border-radius: 8px; padding: 1rem; }
+  .sidebar-item { display: flex; align-items: center; gap: .6rem; padding: .4rem .5rem; border-radius: 5px; margin-bottom: .2rem; cursor: pointer; }
+  .sidebar-item.active { background: rgba(200,64,26,.2); }
+  .sidebar-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,.2); flex-shrink: 0; }
+  .sidebar-item.active .sidebar-dot { background: var(--accent); }
+  .sidebar-label { font-family: var(--mono); font-size: .6rem; color: rgba(255,255,255,.4); }
+  .sidebar-item.active .sidebar-label { color: rgba(255,255,255,.8); }
+  .mockup-main { display: flex; flex-direction: column; gap: .8rem; }
+  .stat-row { display: grid; grid-template-columns: repeat(3,1fr); gap: .6rem; }
+  .stat-card { background: rgba(255,255,255,.04); border-radius: 6px; padding: .8rem; border: 1px solid rgba(255,255,255,.05); }
+  .stat-num { font-family: var(--mono); font-size: 1.4rem; color: #fff; font-weight: 500; }
+  .stat-lbl { font-family: var(--mono); font-size: .55rem; color: rgba(255,255,255,.35); text-transform: uppercase; letter-spacing: .05em; margin-top: .2rem; }
+  .stat-card.highlight { background: rgba(200,64,26,.15); border-color: rgba(200,64,26,.3); }
+  .stat-card.highlight .stat-num { color: #F47A5A; }
+  .chart-area { background: rgba(255,255,255,.03); border-radius: 6px; padding: .8rem; border: 1px solid rgba(255,255,255,.05); flex: 1; }
+  .chart-bars { display: flex; align-items: flex-end; gap: .3rem; height: 60px; margin-top: .5rem; }
+  .bar { border-radius: 2px 2px 0 0; flex: 1; background: rgba(200,64,26,.4); transition: background .2s; }
+  .bar:nth-child(7) { background: var(--accent); }
+  .chart-label { font-family: var(--mono); font-size: .55rem; color: rgba(255,255,255,.3); }
+
+  /* SECTIONS COMMON */
+  section { padding: 6rem 3rem; border-bottom: 1px solid var(--border); }
+  .section-number { font-family: var(--mono); font-size: .65rem; letter-spacing: .12em; color: var(--ink-light); margin-bottom: 1rem; }
+  .section-title { font-family: var(--serif); font-size: clamp(2rem, 4vw, 3.5rem); line-height: 1.15; font-weight: 400; margin-bottom: 2rem; max-width: 20ch; }
+  .section-title em { font-style: italic; color: var(--accent); }
+  .lead { font-size: 1.15rem; color: var(--ink-light); max-width: 55ch; line-height: 1.7; margin-bottom: 2.5rem; }
+
+  /* OVERVIEW */
+  .overview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: start; }
+  .overview-aside { display: flex; flex-direction: column; gap: 1.5rem; padding-top: 1rem; }
+  .aside-card { border: 1px solid var(--border); padding: 1.5rem; background: white; }
+  .aside-card-label { font-family: var(--mono); font-size: .65rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-light); margin-bottom: .8rem; }
+  .aside-card-value { font-family: var(--serif); font-size: 1.6rem; }
+  .tag-list { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .5rem; }
+  .tag { font-family: var(--mono); font-size: .65rem; padding: .25rem .7rem; border: 1px solid var(--border); color: var(--ink-light); }
+
+  /* PROBLEM */
+  .problem-section { background: var(--ink); color: var(--cream); }
+  .problem-section .section-title { color: var(--cream); }
+  .problem-section .section-number { color: rgba(244,241,236,.35); }
+  .problem-section .lead { color: rgba(244,241,236,.65); }
+  .problem-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 2px; margin-top: 3rem; background: rgba(255,255,255,.08); }
+  .problem-item { background: var(--ink); padding: 2rem; }
+  .problem-icon { font-size: 2rem; margin-bottom: 1rem; }
+  .problem-title { font-family: var(--serif); font-size: 1.3rem; margin-bottom: .8rem; color: var(--cream); }
+  .problem-text { font-size: .9rem; color: rgba(244,241,236,.55); line-height: 1.6; }
+  .quote-block { margin-top: 4rem; border-left: 3px solid var(--accent); padding: 2rem 3rem; background: rgba(200,64,26,.08); }
+  .quote-text { font-family: var(--serif); font-size: 1.6rem; font-style: italic; color: var(--cream); line-height: 1.4; margin-bottom: 1rem; }
+  .quote-author { font-family: var(--mono); font-size: .7rem; color: rgba(244,241,236,.4); letter-spacing: .08em; text-transform: uppercase; }
+
+  /* PROCESS */
+  .process-timeline { margin-top: 3rem; }
+  .timeline-item { display: grid; grid-template-columns: 100px 1fr; gap: 2rem; padding: 2rem 0; border-top: 1px solid var(--border); }
+  .timeline-phase { font-family: var(--mono); font-size: .65rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-light); padding-top: .3rem; }
+  .timeline-content h3 { font-family: var(--serif); font-size: 1.4rem; margin-bottom: .8rem; }
+  .timeline-content p { font-size: .95rem; color: var(--ink-light); max-width: 60ch; line-height: 1.7; }
+  .timeline-tags { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: 1rem; }
+  .tl-tag { font-family: var(--mono); font-size: .6rem; padding: .2rem .6rem; background: var(--accent-soft); color: var(--accent); }
+
+  /* SOLUTION */
+  .solution-features { display: grid; grid-template-columns: repeat(2,1fr); gap: 2px; margin-top: 3rem; background: var(--border); }
+  .feature-card { background: var(--cream); padding: 2.5rem; position: relative; overflow: hidden; }
+  .feature-card::before { content: attr(data-num); position: absolute; top: 1rem; right: 1.5rem; font-family: var(--mono); font-size: 4rem; color: rgba(26,24,20,.04); font-weight: 500; }
+  .feature-icon-row { font-size: 1.5rem; margin-bottom: 1.2rem; }
+  .feature-title { font-family: var(--serif); font-size: 1.3rem; margin-bottom: .8rem; }
+  .feature-desc { font-size: .9rem; color: var(--ink-light); line-height: 1.6; }
+  .feature-list { margin-top: 1rem; list-style: none; }
+  .feature-list li { font-family: var(--mono); font-size: .7rem; color: var(--ink-light); padding: .3rem 0; border-bottom: 1px solid var(--border); }
+  .feature-list li::before { content: '→ '; color: var(--accent); }
+
+  /* ARCHITECTURE */
+  .arch-section { background: #F8F5EF; }
+  .arch-diagram { margin-top: 3rem; border: 1px solid var(--border); background: white; padding: 3rem; }
+  .arch-layers { display: flex; flex-direction: column; gap: 1.5rem; }
+  .arch-layer { display: flex; align-items: center; gap: 1.5rem; }
+  .layer-label { font-family: var(--mono); font-size: .65rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-light); width: 80px; flex-shrink: 0; text-align: right; }
+  .layer-blocks { display: flex; gap: .8rem; flex-wrap: wrap; }
+  .arch-block { padding: .5rem 1rem; border: 1px solid var(--border); font-family: var(--mono); font-size: .7rem; color: var(--ink); background: var(--cream); }
+  .arch-block.highlight { background: var(--ink); color: var(--cream); border-color: var(--ink); }
+  .arch-block.accent { background: var(--accent-soft); color: var(--accent); border-color: rgba(200,64,26,.2); }
+  .arch-connector { width: 1px; height: 1.5rem; background: var(--border); margin-left: 160px; }
+
+  /* RESULTS */
+  .results-section { background: var(--ink); color: var(--cream); }
+  .results-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 2px; margin-top: 3rem; background: rgba(255,255,255,.08); }
+  .result-card { background: var(--ink); padding: 2.5rem 2rem; text-align: center; }
+  .result-num { font-family: var(--serif); font-size: 4rem; color: var(--cream); line-height: 1; margin-bottom: .5rem; }
+  .result-num span { color: var(--accent); font-style: italic; }
+  .result-label { font-family: var(--mono); font-size: .65rem; letter-spacing: .1em; text-transform: uppercase; color: rgba(244,241,236,.4); }
+  .result-desc { font-size: .85rem; color: rgba(244,241,236,.5); margin-top: .8rem; line-height: 1.5; }
+  .results-section .lead { color: rgba(244,241,236,.65); }
+  .before-after { margin-top: 4rem; display: grid; grid-template-columns: 1fr 1fr; gap: 2px; background: rgba(255,255,255,.08); }
+  .ba-col { padding: 2.5rem; background: var(--ink); }
+  .ba-col.after { background: rgba(200,64,26,.1); }
+  .ba-label { font-family: var(--mono); font-size: .65rem; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 1.5rem; }
+  .ba-col.after .ba-label { color: var(--accent); }
+  .ba-col:not(.after) .ba-label { color: rgba(244,241,236,.35); }
+  .ba-item { display: flex; align-items: flex-start; gap: .8rem; margin-bottom: 1rem; }
+  .ba-bullet { width: 6px; height: 6px; border-radius: 50%; margin-top: .4rem; flex-shrink: 0; }
+  .ba-col:not(.after) .ba-bullet { background: rgba(244,241,236,.2); }
+  .ba-col.after .ba-bullet { background: var(--accent); }
+  .ba-text { font-size: .9rem; line-height: 1.5; }
+  .ba-col:not(.after) .ba-text { color: rgba(244,241,236,.4); }
+  .ba-col.after .ba-text { color: rgba(244,241,236,.8); }
+
+  /* TESTIMONIAL */
+  .testimonial-section { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; }
+  .testimonial-text { font-family: var(--serif); font-size: 2rem; line-height: 1.4; font-weight: 400; }
+  .testimonial-text em { font-style: italic; color: var(--accent); }
+  .testimonial-meta { margin-top: 2rem; }
+  .testimonial-name { font-size: 1rem; font-weight: 500; }
+  .testimonial-role { font-family: var(--mono); font-size: .7rem; color: var(--ink-light); margin-top: .3rem; }
+  .testimonial-visual { background: white; border: 1px solid var(--border); padding: 2.5rem; }
+  .rating-row { display: flex; gap: .3rem; margin-bottom: 1.5rem; }
+  .star { color: var(--accent); font-size: 1.1rem; }
+  .review-text { font-size: .95rem; color: var(--ink-light); line-height: 1.7; font-style: italic; }
+  .review-divider { border: none; border-top: 1px solid var(--border); margin: 1.5rem 0; }
+
+  /* TECH STACK */
+  .stack-section { background: #F8F5EF; }
+  .stack-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; margin-top: 3rem; background: var(--border); }
+  .stack-card { background: var(--cream); padding: 2rem; }
+  .stack-category { font-family: var(--mono); font-size: .65rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-light); margin-bottom: 1.2rem; }
+  .stack-items { display: flex; flex-direction: column; gap: .6rem; }
+  .stack-item { display: flex; align-items: center; justify-content: space-between; padding: .6rem 0; border-bottom: 1px solid var(--border); }
+  .stack-name { font-family: var(--mono); font-size: .8rem; }
+  .stack-version { font-family: var(--mono); font-size: .65rem; color: var(--ink-light); }
+  .stack-bar-wrap { height: 3px; background: var(--border); border-radius: 2px; margin-top: .3rem; }
+  .stack-bar { height: 100%; background: var(--accent); border-radius: 2px; }
+
+  /* NEXT PROJECTS */
+  .next-section { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+  .next-card { padding: 4rem 3rem; border-right: 1px solid var(--border); text-decoration: none; color: inherit; display: block; transition: background .3s; }
+  .next-card:last-child { border-right: none; }
+  .next-card:hover { background: white; }
+  .next-label { font-family: var(--mono); font-size: .65rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-light); margin-bottom: 1rem; }
+  .next-title { font-family: var(--serif); font-size: 1.8rem; line-height: 1.2; margin-bottom: 1rem; }
+  .next-arrow { font-size: 1.5rem; color: var(--accent); }
+
+  /* FOOTER */
+  footer { padding: 3rem; display: flex; align-items: center; justify-content: space-between; }
+  .footer-copy { font-family: var(--mono); font-size: .7rem; color: var(--ink-light); }
+  .footer-links { display: flex; gap: 2rem; }
+  .footer-links a { font-family: var(--mono); font-size: .7rem; color: var(--ink-light); text-decoration: none; }
+  .footer-links a:hover { color: var(--ink); }
+
+  /* SCROLL ANIMATIONS */
+  .reveal { opacity: 0; transform: translateY(24px); transition: opacity .7s, transform .7s; }
+  .reveal.visible { opacity: 1; transform: none; }
+
+  @media (max-width: 900px) {
+    nav { padding: 1rem 1.5rem; }
+    .nav-links { display: none; }
+    section { padding: 4rem 1.5rem; }
+    .hero { padding: 6rem 1.5rem 3rem; }
+    .hero-meta { grid-template-columns: repeat(2,1fr); }
+    .hero-visual { display: none; }
+    .overview-grid, .problem-grid, .solution-features, .results-grid, .before-after, .testimonial-section, .next-section { grid-template-columns: 1fr; }
+    .stack-grid { grid-template-columns: 1fr; }
+    .arch-layer { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">Portfolio — Casos de Estudio</a>
+  <ul class="nav-links">
+    <li><a href="#overview">Resumen</a></li>
+    <li><a href="#problema">Problema</a></li>
+    <li><a href="#proceso">Proceso</a></li>
+    <li><a href="#solucion">Solución</a></li>
+    <li><a href="#resultados">Resultados</a></li>
+    <li><a href="#stack">Stack</a></li>
+  </ul>
+  <a href="mailto:hola@tuportfolio.com" class="nav-cta">Contactar</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div>
+    <div class="hero-eyebrow">Caso de Estudio · 01</div>
+    <h1 class="hero-title">Sistema de Gestión <em>Hospitalaria</em></h1>
+    <div class="hero-meta">
+      <div class="meta-item"><label>Cliente</label><span>Hospital Sant Pau</span></div>
+      <div class="meta-item"><label>Rol</label><span>Fullstack Developer</span></div>
+      <div class="meta-item"><label>Año</label><span>2024</span></div>
+      <div class="meta-item"><label>Duración</label><span>5 meses</span></div>
+    </div>
+  </div>
+  <div class="hero-badge">
+    <div class="hero-badge-inner"><span style="font-size:.55rem;letter-spacing:.04em;">PROYECTO · REAL · 2024 · HEALTHCARE ·</span></div>
+  </div>
+  <div class="hero-visual">
+    <div class="mockup-window">
+      <div class="mockup-topbar">
+        <div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
+        <span class="mockup-topbar-title">Panel de Control — Turnos</span>
+      </div>
+      <div class="mockup-body">
+        <div class="mockup-sidebar">
+          <div style="font-family:var(--mono);font-size:.55rem;color:rgba(255,255,255,.2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.8rem;">Módulos</div>
+          <div class="sidebar-item active"><div class="sidebar-dot"></div><div class="sidebar-label">Turnos</div></div>
+          <div class="sidebar-item"><div class="sidebar-dot"></div><div class="sidebar-label">Pacientes</div></div>
+          <div class="sidebar-item"><div class="sidebar-dot"></div><div class="sidebar-label">Incidencias</div></div>
+          <div class="sidebar-item"><div class="sidebar-dot"></div><div class="sidebar-label">Informes</div></div>
+          <div class="sidebar-item"><div class="sidebar-dot"></div><div class="sidebar-label">Inventario</div></div>
+          <div class="sidebar-item"><div class="sidebar-dot"></div><div class="sidebar-label">Usuarios</div></div>
+        </div>
+        <div class="mockup-main">
+          <div class="stat-row">
+            <div class="stat-card highlight"><div class="stat-num">247</div><div class="stat-lbl">Pacientes hoy</div></div>
+            <div class="stat-card"><div class="stat-num">38</div><div class="stat-lbl">Turnos activos</div></div>
+            <div class="stat-card"><div class="stat-num">2</div><div class="stat-lbl">Incidencias</div></div>
+          </div>
+          <div class="chart-area">
+            <div class="chart-label">Admisiones — última semana</div>
+            <div class="chart-bars">
+              <div class="bar" style="height:45%"></div>
+              <div class="bar" style="height:60%"></div>
+              <div class="bar" style="height:38%"></div>
+              <div class="bar" style="height:75%"></div>
+              <div class="bar" style="height:55%"></div>
+              <div class="bar" style="height:88%"></div>
+              <div class="bar" style="height:70%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- OVERVIEW -->
+<section id="overview">
+  <div class="overview-grid reveal">
+    <div>
+      <div class="section-number">00 — Resumen ejecutivo</div>
+      <h2 class="section-title">Un sistema que <em>transformó</em> la operativa del hospital</h2>
+      <p class="lead">Diseñé y desarrollé desde cero una plataforma web interna para gestionar los turnos del personal médico, el registro de incidencias y el seguimiento de pacientes en un hospital con más de 800 empleados.</p>
+      <p style="color:var(--ink-light);line-height:1.7;max-width:55ch;">El proyecto sustituyó un sistema de hojas de cálculo y papel que llevaba más de 12 años en uso. El resultado fue una reducción drástica de errores administrativos y un ahorro significativo en tiempo de gestión.</p>
+    </div>
+    <div class="overview-aside">
+      <div class="aside-card">
+        <div class="aside-card-label">Impacto principal</div>
+        <div class="aside-card-value">−70% tiempo administrativo</div>
+      </div>
+      <div class="aside-card">
+        <div class="aside-card-label">Usuarios activos</div>
+        <div class="aside-card-value">800+ empleados</div>
+      </div>
+      <div class="aside-card">
+        <div class="aside-card-label">Stack tecnológico</div>
+        <div class="tag-list">
+          <span class="tag">React</span><span class="tag">Node.js</span><span class="tag">PostgreSQL</span>
+          <span class="tag">Redis</span><span class="tag">Docker</span><span class="tag">AWS</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROBLEMA -->
+<section id="problema" class="problem-section">
+  <div class="reveal">
+    <div class="section-number">01 — Problema identificado</div>
+    <h2 class="section-title" style="color:var(--cream);">Un caos <em>silencioso</em> de 12 años</h2>
+    <p class="lead">El hospital gestionaba los turnos de más de 800 empleados con hojas de Excel compartidas, correos electrónicos y notas en papel. Los errores eran frecuentes y costosos.</p>
+  </div>
+  <div class="problem-grid reveal">
+    <div class="problem-item">
+      <div class="problem-icon">📋</div>
+      <div class="problem-title">Sin trazabilidad</div>
+      <p class="problem-text">Imposible saber quién había hecho qué cambio o cuándo. Los conflictos de turnos se detectaban cuando ya era demasiado tarde.</p>
+    </div>
+    <div class="problem-item">
+      <div class="problem-icon">⏱</div>
+      <div class="problem-title">Alto coste temporal</div>
+      <p class="problem-text">El departamento de RRHH invertía entre 15 y 20 horas semanales en gestionar manualmente los cambios de turno y las incidencias.</p>
+    </div>
+    <div class="problem-item">
+      <div class="problem-icon">❌</div>
+      <div class="problem-title">Errores frecuentes</div>
+      <p class="problem-text">Un promedio de 3 a 5 errores de asignación por semana, algunos con consecuencias directas en la atención al paciente.</p>
+    </div>
+  </div>
+  <div class="quote-block reveal">
+    <p class="quote-text">"Teníamos noches con dos personas asignadas al mismo turno y otras con nadie. Era insostenible."</p>
+    <p class="quote-author">— Directora de RRHH, Hospital Sant Pau</p>
+  </div>
+</section>
+
+<!-- PROCESO -->
+<section id="proceso">
+  <div class="reveal">
+    <div class="section-number">02 — Proceso de desarrollo</div>
+    <h2 class="section-title">De la investigación al <em>despliegue</em></h2>
+    <p class="lead">Un proceso iterativo de 5 meses, con entregas parciales cada dos semanas y validación constante con los usuarios finales.</p>
+  </div>
+  <div class="process-timeline">
+    <div class="timeline-item reveal">
+      <div class="timeline-phase">Mes 1</div>
+      <div class="timeline-content">
+        <h3>Investigación y descubrimiento</h3>
+        <p>Sesiones de entrevistas con el personal de RRHH, médicos, enfermeros y dirección. Mapeo de flujos de trabajo actuales e identificación de puntos de dolor críticos. Análisis de los sistemas existentes y exportación de datos históricos.</p>
+        <div class="timeline-tags">
+          <span class="tl-tag">User Research</span>
+          <span class="tl-tag">Entrevistas</span>
+          <span class="tl-tag">Mapeo de procesos</span>
+          <span class="tl-tag">Análisis de datos</span>
+        </div>
+      </div>
+    </div>
+    <div class="timeline-item reveal">
+      <div class="timeline-phase">Mes 2</div>
+      <div class="timeline-content">
+        <h3>Diseño y arquitectura</h3>
+        <p>Wireframes de baja y alta fidelidad. Definición de la arquitectura de base de datos. Elección del stack tecnológico priorizando mantenibilidad y rendimiento. Prototipo interactivo validado con usuarios antes de escribir código.</p>
+        <div class="timeline-tags">
+          <span class="tl-tag">Figma</span>
+          <span class="tl-tag">Diseño de BD</span>
+          <span class="tl-tag">Arquitectura</span>
+          <span class="tl-tag">Prototipado</span>
+        </div>
+      </div>
+    </div>
+    <div class="timeline-item reveal">
+      <div class="timeline-phase">Mes 3–4</div>
+      <div class="timeline-content">
+        <h3>Desarrollo iterativo</h3>
+        <p>Sprints de dos semanas con demos al equipo. Backend con Node.js y API REST. Frontend en React con TypeScript. Sistema de notificaciones en tiempo real con WebSockets. Módulo de gestión de incidencias con flujo de aprobación.</p>
+        <div class="timeline-tags">
+          <span class="tl-tag">React + TypeScript</span>
+          <span class="tl-tag">Node.js</span>
+          <span class="tl-tag">PostgreSQL</span>
+          <span class="tl-tag">WebSockets</span>
+          <span class="tl-tag">Redis</span>
+        </div>
+      </div>
+    </div>
+    <div class="timeline-item reveal">
+      <div class="timeline-phase">Mes 5</div>
+      <div class="timeline-content">
+        <h3>Testing, formación y despliegue</h3>
+        <p>Pruebas de carga con hasta 500 usuarios concurrentes. Formación presencial a 4 grupos de usuarios. Migración de datos históricos. Despliegue gradual con período de paralelo de 3 semanas. Soporte post-lanzamiento.</p>
+        <div class="timeline-tags">
+          <span class="tl-tag">Jest</span>
+          <span class="tl-tag">Cypress</span>
+          <span class="tl-tag">Docker</span>
+          <span class="tl-tag">AWS EC2</span>
+          <span class="tl-tag">Formación</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SOLUCIÓN -->
+<section id="solucion">
+  <div class="reveal">
+    <div class="section-number">03 — Solución desarrollada</div>
+    <h2 class="section-title">Cuatro módulos, <em>un ecosistema</em></h2>
+    <p class="lead">La plataforma se articuló en cuatro módulos interconectados, cada uno resolviendo un problema específico identificado durante la fase de investigación.</p>
+  </div>
+  <div class="solution-features reveal">
+    <div class="feature-card" data-num="01">
+      <div class="feature-icon-row">📅</div>
+      <div class="feature-title">Gestor de Turnos</div>
+      <p class="feature-desc">Vista de calendario interactiva con drag & drop. Detección automática de conflictos en tiempo real. Gestión de roles y permisos por departamento.</p>
+      <ul class="feature-list">
+        <li>Vista semanal, mensual y por departamento</li>
+        <li>Alertas automáticas de conflicto</li>
+        <li>Exportación a PDF e impresión optimizada</li>
+        <li>Historial de cambios auditado</li>
+      </ul>
+    </div>
+    <div class="feature-card" data-num="02">
+      <div class="feature-icon-row">⚠️</div>
+      <div class="feature-title">Registro de Incidencias</div>
+      <p class="feature-desc">Sistema de tickets con flujo de aprobación multinivel. Notificaciones en tiempo real. Clasificación por severidad y departamento afectado.</p>
+      <ul class="feature-list">
+        <li>Flujo de aprobación configurable</li>
+        <li>Adjuntos y documentación multimedia</li>
+        <li>Dashboard de seguimiento en tiempo real</li>
+        <li>Integración con el módulo de turnos</li>
+      </ul>
+    </div>
+    <div class="feature-card" data-num="03">
+      <div class="feature-icon-row">📊</div>
+      <div class="feature-title">Panel de Analítica</div>
+      <p class="feature-desc">Informes automáticos semanales y mensuales. Métricas de ocupación, ausentismo y horas extra. Visualizaciones exportables.</p>
+      <ul class="feature-list">
+        <li>Generación automática de informes PDF</li>
+        <li>Comparativas históricas por período</li>
+        <li>KPIs configurables por dirección</li>
+        <li>Exportación a Excel y CSV</li>
+      </ul>
+    </div>
+    <div class="feature-card" data-num="04">
+      <div class="feature-icon-row">👤</div>
+      <div class="feature-title">Portal del Empleado</div>
+      <p class="feature-desc">Cada empleado accede a su propio portal para ver sus turnos, solicitar cambios, registrar ausencias y consultar su historial laboral.</p>
+      <ul class="feature-list">
+        <li>App móvil responsive (PWA)</li>
+        <li>Solicitud de vacaciones y cambios online</li>
+        <li>Notificaciones push por turno</li>
+        <li>Acceso al historial personal completo</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ARCHITECTURE -->
+<section class="arch-section">
+  <div class="reveal">
+    <div class="section-number">03b — Arquitectura técnica</div>
+    <h2 class="section-title">Stack pensado para <em>escalar</em></h2>
+    <p class="lead">Arquitectura en capas con separación clara de responsabilidades, diseñada para soportar el crecimiento del hospital y facilitar el mantenimiento.</p>
+  </div>
+  <div class="arch-diagram reveal">
+    <div class="arch-layers">
+      <div class="arch-layer">
+        <div class="layer-label">Frontend</div>
+        <div class="layer-blocks">
+          <div class="arch-block highlight">React 18</div>
+          <div class="arch-block highlight">TypeScript</div>
+          <div class="arch-block">Vite</div>
+          <div class="arch-block">TanStack Query</div>
+          <div class="arch-block">Recharts</div>
+          <div class="arch-block">PWA</div>
+        </div>
+      </div>
+      <div class="arch-connector"></div>
+      <div class="arch-layer">
+        <div class="layer-label">API</div>
+        <div class="layer-blocks">
+          <div class="arch-block highlight">Node.js</div>
+          <div class="arch-block highlight">Express</div>
+          <div class="arch-block">JWT Auth</div>
+          <div class="arch-block">WebSockets</div>
+          <div class="arch-block">Rate Limiting</div>
+        </div>
+      </div>
+      <div class="arch-connector"></div>
+      <div class="arch-layer">
+        <div class="layer-label">Datos</div>
+        <div class="layer-blocks">
+          <div class="arch-block highlight">PostgreSQL</div>
+          <div class="arch-block accent">Redis Cache</div>
+          <div class="arch-block">Migrations</div>
+          <div class="arch-block">Backups S3</div>
+        </div>
+      </div>
+      <div class="arch-connector"></div>
+      <div class="arch-layer">
+        <div class="layer-label">Infra</div>
+        <div class="layer-blocks">
+          <div class="arch-block">Docker</div>
+          <div class="arch-block">AWS EC2</div>
+          <div class="arch-block">Nginx</div>
+          <div class="arch-block">GitHub Actions</div>
+          <div class="arch-block">CloudWatch</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- RESULTADOS -->
+<section id="resultados" class="results-section">
+  <div class="reveal">
+    <div class="section-number">04 — Resultados medidos</div>
+    <h2 class="section-title" style="color:var(--cream);">Números que <em>hablan</em></h2>
+    <p class="lead">Métricas recogidas a los 3 meses del despliegue completo, comparadas con el período equivalente del año anterior.</p>
+  </div>
+  <div class="results-grid reveal">
+    <div class="result-card">
+      <div class="result-num">−<span>70%</span></div>
+      <div class="result-label">Tiempo administrativo</div>
+      <div class="result-desc">De 18h/semana a menos de 5h/semana en gestión de turnos</div>
+    </div>
+    <div class="result-card">
+      <div class="result-num">−<span>85%</span></div>
+      <div class="result-label">Errores de asignación</div>
+      <div class="result-desc">De 4 errores semanales promedio a menos de 1 al mes</div>
+    </div>
+    <div class="result-card">
+      <div class="result-num"><span>100%</span></div>
+      <div class="result-label">Trazabilidad</div>
+      <div class="result-desc">Cada acción queda registrada con usuario, fecha y motivo</div>
+    </div>
+    <div class="result-card">
+      <div class="result-num"><span>98%</span></div>
+      <div class="result-label">Adopción del personal</div>
+      <div class="result-desc">Tasa de uso activo mensual a los 90 días del lanzamiento</div>
+    </div>
+  </div>
+  <div class="before-after reveal">
+    <div class="ba-col">
+      <div class="ba-label">Antes del sistema</div>
+      <div class="ba-item"><div class="ba-bullet"></div><div class="ba-text">Excel compartido con versiones duplicadas y conflictos frecuentes</div></div>
+      <div class="ba-item"><div class="ba-bullet"></div><div class="ba-text">Sin notificaciones automáticas de cambios de turno</div></div>
+      <div class="ba-item"><div class="ba-bullet"></div><div class="ba-text">Incidencias registradas en papel, difíciles de seguir</div></div>
+      <div class="ba-item"><div class="ba-bullet"></div><div class="ba-text">Informes manuales que tardaban días en prepararse</div></div>
+    </div>
+    <div class="ba-col after">
+      <div class="ba-label">Con el nuevo sistema</div>
+      <div class="ba-item"><div class="ba-bullet"></div><div class="ba-text">Plataforma centralizada con fuente única de verdad</div></div>
+      <div class="ba-item"><div class="ba-bullet"></div><div class="ba-text">Notificaciones push y email instantáneas ante cualquier cambio</div></div>
+      <div class="ba-item"><div class="ba-bullet"></div><div class="ba-text">Sistema de tickets digital con seguimiento en tiempo real</div></div>
+      <div class="ba-item"><div class="ba-bullet"></div><div class="ba-text">Informes automáticos generados en segundos</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIAL -->
+<section>
+  <div class="testimonial-section reveal">
+    <div>
+      <p class="testimonial-text">"La implementación fue <em>impecable</em>. En tres semanas el personal ya no quería volver al sistema anterior."</p>
+      <div class="testimonial-meta">
+        <div class="testimonial-name">Dra. Carme Puigdomènech</div>
+        <div class="testimonial-role">Directora de Operaciones — Hospital Sant Pau</div>
+      </div>
+    </div>
+    <div class="testimonial-visual">
+      <div class="rating-row">
+        <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+      </div>
+      <p class="review-text">"Llevábamos años buscando una solución que se adaptara a nuestra complejidad. El desarrollador entendió nuestros procesos desde el primer día y entregó exactamente lo que necesitábamos."</p>
+      <hr class="review-divider">
+      <p style="font-family:var(--mono);font-size:.65rem;color:var(--ink-light);">Verificado · Noviembre 2024</p>
+    </div>
+  </div>
+</section>
+
+<!-- STACK -->
+<section id="stack" class="stack-section">
+  <div class="reveal">
+    <div class="section-number">05 — Stack tecnológico</div>
+    <h2 class="section-title">Herramientas <em>elegidas</em> con criterio</h2>
+    <p class="lead">Cada tecnología fue seleccionada por un motivo concreto: rendimiento, mantenibilidad a largo plazo y curva de aprendizaje del equipo interno.</p>
+  </div>
+  <div class="stack-grid reveal">
+    <div class="stack-card">
+      <div class="stack-category">Frontend</div>
+      <div class="stack-items">
+        <div>
+          <div class="stack-item"><span class="stack-name">React 18</span><span class="stack-version">v18.2</span></div>
+          <div class="stack-bar-wrap"><div class="stack-bar" style="width:95%"></div></div>
+        </div>
+        <div>
+          <div class="stack-item"><span class="stack-name">TypeScript</span><span class="stack-version">v5.0</span></div>
+          <div class="stack-bar-wrap"><div class="stack-bar" style="width:90%"></div></div>
+        </div>
+        <div>
+          <div class="stack-item"><span class="stack-name">TanStack Query</span><span class="stack-version">v5</span></div>
+          <div class="stack-bar-wrap"><div class="stack-bar" style="width:80%"></div></div>
+        </div>
+        <div>
+          <div class="stack-item"><span class="stack-name">Recharts</span><span class="stack-version">v2.x</span></div>
+          <div class="stack-bar-wrap"><div class="stack-bar" style="width:70%"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="stack-card">
+      <div class="stack-category">Backend</div>
+      <div class="stack-items">
+        <div>
+          <div class="stack-item"><span class="stack-name">Node.js</span><span class="stack-version">v20 LTS</span></div>
+          <div class="stack-bar-wrap"><div class="stack-bar" style="width:95%"></div></div>
+        </div>
+        <div>
+          <div class="stack-item"><span class="stack-name">Express</span><span class="stack-version">v4.x</span></div>
+          <div class="stack-bar-wrap"><div class="stack-bar" style="width:90%"></div></div>
+        </div>
+        <div>
+          <div class="stack-item"><span class="stack-name">Socket.io</span><span class="stack-version">v4.x</span></div>
+          <div class="stack-bar-wrap"><div class="stack-bar" style="width:75%"></div></div>
+        </div>
+        <div>
+          <div class="stack-item"><span class="stack-name">Nodemailer</span><span class="stack-version">v6.x</span></div>
+          <div class="stack-bar-wrap"><div class="stack-bar" style="width:65%"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="stack-card">
+      <div class="stack-category">Infraestructura</div>
+      <div class="stack-items">
+        <div>
+          <div class="stack-item"><span class="stack-name">PostgreSQL</span><span class="stack-version">v15</span></div>
+          <div class="stack-bar-wrap"><div class="stack-bar" style="width:95%"></div></div>
+        </div>
+        <div>
+          <div class="stack-item"><span class="stack-name">Redis</span><span class="stack-version">v7</span></div>
+          <div class="stack-bar-wrap"><div class="stack-bar" style="width:80%"></div></div>
+        </div>
+        <div>
+          <div class="stack-item"><span class="stack-name">Docker</span><span class="stack-version">v24</span></div>
+          <div class="stack-bar-wrap"><div class="stack-bar" style="width:85%"></div></div>
+        </div>
+        <div>
+          <div class="stack-item"><span class="stack-name">AWS EC2 + S3</span><span class="stack-version">—</span></div>
+          <div class="stack-bar-wrap"><div class="stack-bar" style="width:75%"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- NEXT -->
+<section style="padding:0;border-bottom:1px solid var(--border);">
+  <div style="padding:3rem 3rem 1.5rem;"><div class="section-number">Ver más proyectos</div></div>
+  <div class="next-section">
+    <a href="web-servicios.html" class="next-card">
+      <div class="next-label">← Anterior</div>
+      <div class="next-title">Web de Servicios Personales</div>
+      <div class="next-arrow">↗</div>
+    </a>
+    <a href="proyectos-practica.html" class="next-card">
+      <div class="next-label">Siguiente →</div>
+      <div class="next-title">Proyectos de Práctica</div>
+      <div class="next-arrow">↗</div>
+    </a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <span class="footer-copy">© 2024 Tu Nombre — Todos los derechos reservados</span>
+  <div class="footer-links">
+    <a href="mailto:hola@tuportfolio.com">Email</a>
+    <a href="#">LinkedIn</a>
+    <a href="#">GitHub</a>
+  </div>
+</footer>
+
+<script>
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        setTimeout(() => e.target.classList.add('visible'), i * 80);
+      }
+    });
+  }, { threshold: 0.1 });
+  reveals.forEach(r => observer.observe(r));
+</script>
+</body>
+</html>
