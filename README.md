@@ -18,3 +18,9 @@ Lenguajes: [Aquí añade los que uses: ej. Python, JS, PHP, SQL]
 Enfoque: Resolución de problemas, seguridad de datos y comunicación asertiva con el cliente.
 
 📫 ¿Tienes un proyecto en mente? Estoy abierto a colaboraciones para desarrollo web y software personalizado. ¡Contáctame por LinkedIn!
+
+
+### 📂 Mis Proyectos (Ver en vivo):
+* 🏥 [Caso de Estudio: Software Hospitalario](https://Sello1213.github.io/ArnauGarcia_DEV/caso-estudio-hospital.html)
+* 🌐 [Mis Servicios Web](https://Sello1213.github.io/ArnauGarcia_DEV/web-servicios.html)
+* 💻 [Proyectos de Práctica](https://Sello1213.github.io/ArnauGarcia_DEV/proyectos-practica.html)
